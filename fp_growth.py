@@ -84,9 +84,7 @@ def find_frequent_itemsets(transactions, minimum_support, include_support=False)
     # Search for frequent itemsets, and yield the results we find.
     for itemset in find_with_suffix(master, []):
         yield itemset
-    print master.root.children
-    print master.root.children[0].children
-#printTreeBranches(master.root)
+    printTreeBranches(master.root)
 
 class FPTree(object):
     """
@@ -280,6 +278,10 @@ class FPNode(object):
     #List of Branches Node can go to in the FP tree when travelled down
         self._branchNos = []
     
+    def addBranchNo(self,branchNo):
+    #Appending the new branch no to the list
+        self._branchNos.append(branchNo)
+    
     def add(self, child):
         global curBranchNo
         """Adds the given FPNode `child` as a child of this node."""
@@ -294,8 +296,8 @@ class FPNode(object):
             #A new brach originates from self and it's id is decided depending
             #on the no. of children it's parent has
             if len(child.parent.children) > 1:
-                newBranchNo = curBranchNo
                 curBranchNo += 1
+                newBranchNo = curBranchNo
             else:
                 newBranchNo = child.parent.branchNos[0]
             
@@ -305,9 +307,9 @@ class FPNode(object):
             cur = self
             while ( 1 ):
                 if not newBranchNo in cur._branchNos:
-                    cur._branchNos.append(newBranchNo)
-                    if cur._parent != None:
-                        cur = cur._parent
+                    cur.addBranchNo(newBranchNo)
+                    if cur.parent != None:
+                        cur = cur.parent
                     else:
                         break
                 else:
