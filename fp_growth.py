@@ -132,6 +132,7 @@ class FPTree(object):
 
         try:
             route = self._routes[point.item]
+ 	    #Adds current node to the tail and updates the tail
             route[1].neighbor = point # route[1] is the tail
             self._routes[point.item] = self.Route(route[0], point)
         except KeyError:
