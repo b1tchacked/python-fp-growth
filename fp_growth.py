@@ -8,13 +8,20 @@ Basic usage of the module is very simple:
     >>> from fp_growth import find_frequent_itemsets
     >>> find_frequent_itemsets(transactions, minimum_support)
 """
-
 from collections import defaultdict, namedtuple
 from itertools import imap
 
 __author__ = 'Eric Naeseth <eric@naeseth.com>'
 __copyright__ = 'Copyright © 2009 Eric Naeseth'
 __license__ = 'MIT License'
+
+curBranchNo = 1
+
+#Testing Code Should be removed
+def printTreeBranches(node):
+    print str(node.item) + " " + str(node.branchNos)
+    for child in node.children:
+        printTreeBranches(child)
 
 def find_frequent_itemsets(transactions, minimum_support, include_support=False):
     """
@@ -56,6 +63,7 @@ def find_frequent_itemsets(transactions, minimum_support, include_support=False)
         return transaction
 
     master = FPTree()
+    #Runs clean_transaction on every processed_transactions and returns as a tuple
     for transaction in imap(clean_transaction, processed_transactions):
         master.add(transaction)
 
@@ -73,10 +81,12 @@ def find_frequent_itemsets(transactions, minimum_support, include_support=False)
                     minimum_support)
                 for s in find_with_suffix(cond_tree, found_set):
                     yield s # pass along the good news to our caller
-
     # Search for frequent itemsets, and yield the results we find.
     for itemset in find_with_suffix(master, []):
         yield itemset
+    print master.root.children
+    print master.root.children[0].children
+#printTreeBranches(master.root)
 
 class FPTree(object):
     """
@@ -91,7 +101,7 @@ class FPTree(object):
     def __init__(self):
         # The root node of the tree.
         self._root = FPNode(self, None, None)
-
+        self._root._branchNos.append(1)
         # A dictionary mapping items to the head and tail of a path of
         # "neighbors" that will hit every node containing that item.
         self._routes = {}
@@ -126,6 +136,7 @@ class FPTree(object):
 
             point = next_point
 
+
     def _update_route(self, point):
         """Add the given node to the route through all nodes for its item."""
         assert self is point.tree
@@ -133,7 +144,9 @@ class FPTree(object):
         try:
             route = self._routes[point.item]
  	    #Adds current node to the tail and updates the tail
+        #tail's neighbour = point
             route[1].neighbor = point # route[1] is the tail
+            #updating tail with point and previous tail exists in the path
             self._routes[point.item] = self.Route(route[0], point)
         except KeyError:
             # First node for this item; start a new route.
@@ -264,8 +277,11 @@ class FPNode(object):
         self._parent = None
         self._children = {}
         self._neighbor = None
-
+    #List of Branches Node can go to in the FP tree when travelled down
+        self._branchNos = []
+    
     def add(self, child):
+        global curBranchNo
         """Adds the given FPNode `child` as a child of this node."""
 
         if not isinstance(child, FPNode):
@@ -274,6 +290,30 @@ class FPNode(object):
         if not child.item in self._children:
             self._children[child.item] = child
             child.parent = self
+            
+            #A new brach originates from self and it's id is decided depending
+            #on the no. of children it's parent has
+            if len(child.parent.children) > 1:
+                newBranchNo = curBranchNo
+                curBranchNo += 1
+            else:
+                newBranchNo = child.parent.branchNos[0]
+            
+            #Child has been appended with the branch id
+            child._branchNos.append(newBranchNo)
+            #All parents should also be appended with the branch id
+            cur = self
+            while ( 1 ):
+                if not newBranchNo in cur._branchNos:
+                    cur._branchNos.append(newBranchNo)
+                    if cur._parent != None:
+                        cur = cur._parent
+                    else:
+                        break
+                else:
+                    break
+
+
 
     def search(self, item):
         """
@@ -311,6 +351,11 @@ class FPNode(object):
     def __contains__(self, item):
         return item in self._children
 
+    @property
+    def branchNos(self):
+        """Ids of the branches that originate from this node"""
+        return self._branchNos
+    
     @property
     def tree(self):
         """The tree in which this node appears."""
