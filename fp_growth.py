@@ -81,10 +81,60 @@ def find_frequent_itemsets(transactions, minimum_support, include_support=False)
                     minimum_support)
                 for s in find_with_suffix(cond_tree, found_set):
                     yield s # pass along the good news to our caller
-    # Search for frequent itemsets, and yield the results we find.
+
+    #Can Further Check for Confidence Values
+    supportedItemSets = []
     for itemset in find_with_suffix(master, []):
         yield itemset
-    printTreeBranches(master.root)
+        supportedItemSets.append(itemset)
+
+    confidentItemSets = []
+    #Function used to check whether two itemsets intersection is confident
+    def isConfidentItemSet ( itemset , support , support1 , tree ):
+        confidenceMeasure = 4
+        combSupport = 0
+        itemset.sort(key=lambda v: items[v], reverse=False)
+        i = 1
+        for treeNode in tree.nodes(itemset[0]):
+            curSupport = treeNode.count
+            cur = treeNode.parent
+            while cur is not None and i < len(itemset):
+                cur = cur.parent
+                if  cur != None and cur.item == itemset[i]:
+                    i += 1
+            if i < len(itemset):
+                combSupport += curSupport
+
+        if ( abs(combSupport - support*support1) >= confidenceMeasure ):
+            return True
+        else:
+            return False
+
+
+    goodPair = True
+    for itemset, support in supportedItemSets:
+        for itemset1, support1 in supportedItemSets:
+            for item in itemset:
+                for item1 in itemset1:
+                    if item == item1:
+                        goodPair = False
+                        break
+                if not goodPair:
+                    break
+            if goodPair:
+                if isConfidentItemSet ( itemset + itemset1 , support , support1 , master ):
+                    #Tuple Added to List
+                    confidentItemSets.append( (itemset,itemset1 ) )
+
+            #Bringing back to initial State for checks
+            if not goodPair:
+                goodPair = True
+
+    """printTreeBranches(master.root)"""
+    print "Printing Confident ItemSets"
+    for a in confidentItemSets:
+        print a[0]
+        print a[1]
 
 class FPTree(object):
     """
@@ -441,7 +491,7 @@ if __name__ == '__main__':
     p = OptionParser(usage='%prog data_file')
     p.add_option('-s', '--minimum-support', dest='minsup', type='int',
         help='Minimum itemset support (default: 2)')
-    p.set_defaults(minsup=2)
+    p.set_defaults(minsup=1)
 
     options, args = p.parse_args()
     if len(args) < 1:
@@ -449,7 +499,8 @@ if __name__ == '__main__':
 
     f = open(args[0])
     try:
-        for itemset, support in find_frequent_itemsets(csv.reader(f), options.minsup, True):
+        frequentItemsets = find_frequent_itemsets(csv.reader(f), options.minsup, True)
+        for itemset, support in frequentItemsets:
             print '{' + ', '.join(itemset) + '} ' + str(support)
     finally:
         f.close()

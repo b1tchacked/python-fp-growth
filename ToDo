@@ -1,8 +1,11 @@
 Current:
 	Set of itemsets {X}
 	pick x,y belongs to X such that  x intersection y = emptyset
+	    How to do this efficiently?
+	        Brute force works better as they are sorted
 		check for confidencemenasure ( sup ( x intersection y )/n^2 - sup(x)*sup(y)/n^2 )
 	Write a function that evaluates support(A intersection B) given itemset A and B
+	Done until here Requires little bit testing
 
 Future:
 	Make changes so that we have the full fp tree and not remove nodes of less support
