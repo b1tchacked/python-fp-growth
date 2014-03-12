@@ -25,8 +25,26 @@ def supportOfOredItemSet( itemset, masterTree ):
                 support += node.count
             else:
                 addSupport = True
+    return support
+
+def supportOfIntersectionOfTwoOredSets ( itemset1 , itemset2 , masterTree ):
+    support = 0
+    addSupport = True
+    branchNos = []
+    for item1 in itemset1:
+        for item2 in itemset2:
+            for node in masterTree.nodes(item2):
+                for no in node.branchNos:
+                    if no in branchNos:
+                        addSupport = False
+                        break
+                if addSupport and sameBranch(node,item1):
+                    support += node.count
+                else:
+                    addSupport = True
 
     return support
+
 
 def clean_transaction(transaction):
     #transaction = filter(lambda v: v in itemSupport, transaction)
