@@ -9,11 +9,27 @@ itemsAvail = []
 itemsAvailIndex = defaultdict(lambda: 0) # mapping items to their index in itemsAvail
 
 noOfTransactions = 1
+
 def supportOfOredItemSet( itemset, masterTree ):
-    return True
+    #itemset.sort( key=lambda  v:itemSupport[v] )
+    support = 0
+    addSupport = True
+    branchNos = []
+    for item in reversed(itemset):
+        for node in masterTree.nodes(item):
+            for no in node.branchNos:
+                if no in branchNos:
+                    addSupport = False
+                    break
+            if addSupport:
+                support += node.count
+            else:
+                addSupport = True
+
+    return support
 
 def clean_transaction(transaction):
-    transaction = filter(lambda v: v in itemSupport, transaction)
+    #transaction = filter(lambda v: v in itemSupport, transaction)
     transaction.sort(key=lambda v: itemSupport[v], reverse=True)
     return transaction
 
@@ -88,14 +104,23 @@ def findFrequentOredItemSets(masterTree , minimumSupport ):
     #There are size no. of pointers pointing to one element and each and one of the
     #pointer would be advanced for the next computation
     finalConfigurations = []
+
     supportedConfigurations = []
-    unsupportedConfigurations = itemsAvail
+    unsupportedConfigurations = []
+
+    for item in itemsAvail:
+        if itemSupport[item] >= minimumSupport:
+            supportedConfigurations.append(item)
+        else:
+            unsupportedConfigurations.append(item)
+
 
     for i in range(0,len(itemsAvail)):
         if unsupportedConfigurations:
             for itemComb in unsupportedConfigurations:
                 for i in range(itemsAvailIndex[itemComb[len(itemComb)-1]]+1,len(itemsAvail)):
-                    if supportOfOredItemSet(itemComb+itemsAvail[i],masterTree):# > minimumSupport:
+                    curSup = supportOfOredItemSet(itemComb+itemsAvail[i],masterTree)
+                    if curSup >= minimumSupport:
                         supportedConfigurations.append(itemComb+itemsAvail[i])
                     else:
                         unsupportedConfigurations.append(itemComb+itemsAvail[i])
@@ -161,8 +186,8 @@ def find_frequent_itemsets(transactions, minimum_support, include_support=False)
         itemsAvailIndex[itemsAvail[i]] = i
 
     # Remove infrequent items from the item support dictionary.
-    itemSupport = dict((item, support) for item, support in itemSupport.iteritems()
-        if support >= minimum_support)
+    #itemSupport = dict((item, support) for item, support in itemSupport.iteritems()
+        #if support >= minimum_support)
 
     # Build our FP-tree. Before any transactions can be added to the tree, they
     # must be stripped of infrequent items and their surviving items must be
