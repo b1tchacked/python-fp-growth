@@ -3,7 +3,14 @@ from collections import defaultdict, namedtuple
 from itertools import imap
 from FpTree import FPTree
 from FpNode import FPNode
+
 itemSupport = defaultdict(lambda: 0) # mapping from items to their supports
+itemsAvail = []
+itemsAvailIndex = defaultdict(lambda: 0) # mapping items to their index in itemsAvail
+
+noOfTransactions = 1
+def supportOfOredItemSet( itemset, masterTree ):
+    return True
 
 def clean_transaction(transaction):
     transaction = filter(lambda v: v in itemSupport, transaction)
@@ -76,7 +83,46 @@ def conditional_tree_from_paths(paths, minimum_support):
 
     return tree
 
+def findFrequentOredItemSets(masterTree , minimumSupport ):
+
+    #There are size no. of pointers pointing to one element and each and one of the
+    #pointer would be advanced for the next computation
+    finalConfigurations = []
+    supportedConfigurations = []
+    unsupportedConfigurations = itemsAvail
+
+    for i in range(0,len(itemsAvail)):
+        if unsupportedConfigurations:
+            for itemComb in unsupportedConfigurations:
+                for i in range(itemsAvailIndex[itemComb[len(itemComb)-1]]+1,len(itemsAvail)):
+                    if supportOfOredItemSet(itemComb+itemsAvail[i],masterTree):# > minimumSupport:
+                        supportedConfigurations.append(itemComb+itemsAvail[i])
+                    else:
+                        unsupportedConfigurations.append(itemComb+itemsAvail[i])
+        tempConfig = []
+        for itemComb in supportedConfigurations:
+            #print itemComb
+            finalConfigurations.append(itemComb)
+            for i in range(itemsAvailIndex[itemComb[len(itemComb)-1]]+1,len(itemsAvail)):
+                tempConfig.append(itemComb+itemsAvail[i])
+
+        supportedConfigurations = tempConfig
+        unsupportedConfigurations = []
+
+
+
+    for itemComb in finalConfigurations:
+        print itemComb
+
+    return finalConfigurations
+
+
+
+
 def find_frequent_itemsets(transactions, minimum_support, include_support=False):
+    #This will have items in the sorted order that will help finding Ored FreqItemsets
+    global itemsAvail
+    global noOfTransactions
     """
     Find frequent itemsets in the given transactions using FP-growth. This
     function returns a generator instead of an eagerly-populated list of items.
@@ -96,11 +142,23 @@ def find_frequent_itemsets(transactions, minimum_support, include_support=False)
     # Load the passed-in transactions and count the support that individual
     # items have.
     for transaction in transactions:
+        noOfTransactions += 1
         processed = []
         for item in transaction:
+
+            if item not in itemsAvail:
+                itemsAvail.append(item)
+
             itemSupport[item] += 1
             processed.append(item)
         processed_transactions.append(processed)
+
+    #Sorting the list of items
+    itemsAvail.sort(key=lambda v: itemSupport[v], reverse=False)
+
+    #Updating itemsAvailIndex
+    for i in range(0,len(itemsAvail)):
+        itemsAvailIndex[itemsAvail[i]] = i
 
     # Remove infrequent items from the item support dictionary.
     itemSupport = dict((item, support) for item, support in itemSupport.iteritems()

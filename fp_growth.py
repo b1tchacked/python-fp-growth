@@ -18,6 +18,7 @@ __license__ = 'MIT License'
 
 
 from confidenceUtil import findConfidentItemSets
+from supportUtil import findFrequentOredItemSets
 from supportUtil import  find_frequent_itemsets
 
 #Testing Code Should be removed
@@ -42,7 +43,7 @@ if __name__ == '__main__':
     f = open(args[0])
     try:
         supportedItemSets,master,itemSupport = find_frequent_itemsets(csv.reader(f), options.minsup, True)
-
+        findFrequentOredItemSets( master , options.minsup )
         """print "Minimum Supported Sets"
         for pair,support in supportedItemSets:
             print str(pair) + " " + str(support)
