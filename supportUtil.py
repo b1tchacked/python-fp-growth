@@ -46,6 +46,26 @@ def sameBranch( node , items ):
 
     return False
 
+def supportOfOredAndIntersectionSets( itemset1, itemset2 , masterTree ):
+    #itemset1 intersection , itemset2 Ored
+    support = 0
+    for node in masterTree.nodes(itemset1[0]):
+        matchCount = 1
+        i = 1
+        cur = node.parent
+        found2 = False
+        while cur != None and i < len(itemset1):
+            if cur.item = itemset1[i]:
+                i+= 1
+            if cur.item in itemset2:
+                found2 = True
+
+        if found2 and i == len(itemset1):
+            support += node.count
+    return support
+
+
+
 
 #Returns support of the kind UAi intersection UBi kind
 def supportOfIntersectionOfTwoOredSets ( itemset1 , itemset2 , masterTree ):
