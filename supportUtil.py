@@ -27,21 +27,41 @@ def supportOfOredItemSet( itemset, masterTree ):
                 addSupport = True
     return support
 
+def sameBranch( node , items ):
+    cur = node.parent
+
+    while cur != None:
+        if cur.item in items:
+            return True
+        cur = node.parent
+
+    cur = node.children
+
+    while cur:
+        if cur[0].item in items:
+            return  True
+        for nodes in cur[0].children:
+            cur.append(nodes)
+        cur.remove(0)
+
+    return False
+
+
+#Returns support of the kind UAi intersection UBi kind
 def supportOfIntersectionOfTwoOredSets ( itemset1 , itemset2 , masterTree ):
     support = 0
     addSupport = True
     branchNos = []
-    for item1 in itemset1:
-        for item2 in itemset2:
-            for node in masterTree.nodes(item2):
-                for no in node.branchNos:
-                    if no in branchNos:
-                        addSupport = False
-                        break
-                if addSupport and sameBranch(node,item1):
-                    support += node.count
-                else:
-                    addSupport = True
+    for item2 in itemset2:
+        for node in masterTree.nodes(item2):
+            for no in node.branchNos:
+                if no in branchNos:
+                    addSupport = False
+                    break
+            if addSupport and sameBranch(node,itemset1):
+                support += node.count
+            else:
+                addSupport = True
 
     return support
 
