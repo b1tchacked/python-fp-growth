@@ -9,5 +9,8 @@ Current:
 
 Future:
 	Make changes so that we have the full fp tree and not remove nodes of less support
+	Providing unionated candidate itemsets
+	    -Identify leaves
+	    
 	Write anoter function that evaluates support( A union B )
 

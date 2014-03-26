@@ -92,7 +92,6 @@ class FPTree(object):
 
     def prefix_paths(self, item):
         """Generates the prefix paths that end with the given item."""
-
         def collect_path(node):
             path = []
             while node and not node.root:

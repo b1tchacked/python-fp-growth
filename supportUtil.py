@@ -23,63 +23,93 @@ def supportOfOredItemSet( itemset, masterTree ):
                     break
             if addSupport:
                 support += node.count
+                for noTemp in node.branchNos:
+                    branchNos.append(noTemp)
             else:
                 addSupport = True
     return support
 
 def sameBranch( node , items ):
+    support = 0
+    found = False
+    branches = []
+    #Check For it's Parents
     cur = node.parent
-
     while cur != None:
-        if cur.item in items:
-            return True
-        cur = node.parent
+        if items.find(str(cur.item)) != -1:
+            return True,-1,branches
+        cur = cur.parent
 
-    cur = node.children
-
+    #Check For it's Children
+    cur = []
+    for c in node.children:
+        cur.append(c)
     while cur:
-        if cur[0].item in items:
-            return  True
-        for nodes in cur[0].children:
-            cur.append(nodes)
-        cur.remove(0)
+        if items.find(cur[0].item) != -1:
+            found = True
+            support += cur[0].count
+            for no in cur[0].branchNos:
+                branches.append(no)
+        else:
+            for nodes in cur[0].children:
+                cur.append(nodes)
+        cur.pop(0)
+    if found:
+        return True , support , branches
+    else:
+        return False,0,branches
 
-    return False
+def charInString( s , c ):
+        if s.find(c) != -1:
+            return True
+        else:
+            return False
 
 def supportOfOredAndIntersectionSets( itemset1, itemset2 , masterTree ):
-    #itemset1 intersection , itemset2 Ored
+    #itemset1 Anded intersection , itemset2 Ored
     support = 0
     for node in masterTree.nodes(itemset1[0]):
-        matchCount = 1
         i = 1
         cur = node.parent
-        found2 = False
-        while cur != None and i < len(itemset1):
-            if cur.item = itemset1[i]:
+        while cur != None and i != len(itemset1):
+            if i < len(itemset1) and cur.item == itemset1[i]:
                 i+= 1
-            if cur.item in itemset2:
-                found2 = True
+            cur = cur.parent
 
-        if found2 and i == len(itemset1):
-            support += node.count
+        if i == len(itemset1):
+            branchSame, countV, branches = sameBranch(node,itemset2)
+            if countV == -1:
+                support += node.count
+            elif countV != 0:
+                support += countV
     return support
 
 
 
 
-#Returns support of the kind UAi intersection UBi kind
-def supportOfIntersectionOfTwoOredSets ( itemset1 , itemset2 , masterTree ):
+#Returns support of the kind UAi intersection UBi kind Last thing to be checked
+def supportOfIntersectionOfTwoOredSets( itemset1 , itemset2 , masterTree ):
     support = 0
     addSupport = True
     branchNos = []
-    for item2 in itemset2:
+    for item2 in reversed(itemset2):
         for node in masterTree.nodes(item2):
             for no in node.branchNos:
                 if no in branchNos:
                     addSupport = False
                     break
-            if addSupport and sameBranch(node,itemset1):
-                support += node.count
+            if addSupport:
+                branchSame , countV , branches = sameBranch(node,itemset1)
+                if countV == -1:
+                    support += node.count
+                    #Shouldn't Go through the same branches again
+                    for no in node.branchNos:
+                        branchNos.append(no)
+                elif countV != 0:
+                    support += countV
+                    #Shouldn't Go through the same branches again
+                    for no in branches:
+                        branchNos.append(no)
             else:
                 addSupport = True
 

@@ -17,6 +17,7 @@ __copyright__ = 'Copyright © 2009 Eric Naeseth'
 __license__ = 'MIT License'
 
 
+from supportUtil import supportOfOredItemSet,supportOfOredAndIntersectionSets,supportOfIntersectionOfTwoOredSets
 from confidenceUtil import findConfidentItemSets
 from supportUtil import findFrequentOredItemSets
 from supportUtil import  find_frequent_itemsets
@@ -43,6 +44,7 @@ if __name__ == '__main__':
     f = open(args[0])
     try:
         supportedItemSets,master,itemSupport = find_frequent_itemsets(csv.reader(f), options.minsup, True)
+        print itemSupport
         findFrequentOredItemSets( master , options.minsup )
         """print "Minimum Supported Sets"
         for pair,support in supportedItemSets:
@@ -54,5 +56,7 @@ if __name__ == '__main__':
         print "Confident Sets"
         for pair in findConfidentItemSets( supportedItemSets , master , itemSupport ):
             print str(pair[0]) + " " + str(pair[1])
+        print supportOfIntersectionOfTwoOredSets("f","f",master)
+        print "Finished"
     finally:
         f.close()
